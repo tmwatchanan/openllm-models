@@ -1,6 +1,6 @@
 service: service:VLLM
 name: llama3.2
-version: 3b-instruct-fp16-6cc3
+version: 3b-instruct-fp16-6cc3-lm
 bentoml_version: 1.3.7
 creation_time: '2024-09-27T22:06:32.974977+00:00'
 labels:

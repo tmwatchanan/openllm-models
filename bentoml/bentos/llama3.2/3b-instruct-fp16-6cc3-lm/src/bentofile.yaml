@@ -11,7 +11,7 @@ include:
 - chat_templates/chat_templates/*
 labels:
   model_name: meta-llama/Llama-3.2-3B-Instruct-lm
-  openllm_alias: 3b,3b-instruct
+  openllm_alias: 3b-lm,3b-instruct-lm
   platforms: linux
   source: https://github.com/bentoml/openllm-models/tree/main/src/vllm-chat
 python:

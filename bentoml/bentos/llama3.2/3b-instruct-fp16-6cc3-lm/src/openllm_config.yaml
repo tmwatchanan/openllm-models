@@ -26,9 +26,6 @@ service_config:
       - POST
       - HEAD
       - PUT
-    access_control_allow_credentials: true
     access_control_allow_headers:
       - "*"
-    access_control_max_age: 1200
-    access_control_expose_headers:
-      - Content-Length
+      - authorization,content-type

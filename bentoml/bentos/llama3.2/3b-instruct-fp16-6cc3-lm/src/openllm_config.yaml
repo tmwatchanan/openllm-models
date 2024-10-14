@@ -18,6 +18,7 @@ service_config:
   cors:
     enabled: true
     access_control_allow_origins:
+      - "*"
       - vscode-file://vscode-app
     access_control_allow_methods:
       - GET

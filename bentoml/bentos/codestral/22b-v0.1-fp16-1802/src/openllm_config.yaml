@@ -4,6 +4,7 @@ engine_config:
   enforce_eager: true
   max_model_len: 8192
   model: mistralai/Codestral-22B-v0.1
+  tokenizer_mode: mistral
 extra_envs:
 - name: HF_TOKEN
 extra_labels:

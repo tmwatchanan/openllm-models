@@ -1,6 +1,6 @@
 engine_config:
   dtype: half
-  max_model_len: 2048
+  max_model_len: 128000
   model: meta-llama/Llama-3.2-3B-Instruct
 extra_envs:
 - name: HF_TOKEN

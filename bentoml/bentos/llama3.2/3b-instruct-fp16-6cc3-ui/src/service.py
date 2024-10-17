@@ -78,8 +78,8 @@ async def catch_all(full_path: str):
     return FileResponse(os.path.join(STATIC_DIR, "chat.html"))
 
 
-@bentoml.mount_asgi_app(openai_api_app, path="/lineman-data/llama3b-ui/v1")
-@bentoml.mount_asgi_app(ui_app, path="/lineman-data/llama3b-ui/chat")
+@bentoml.mount_asgi_app(openai_api_app, path="/v1")
+@bentoml.mount_asgi_app(ui_app, path="/chat")
 @bentoml.service(**SERVICE_CONFIG)
 class VLLM:
     def __init__(self) -> None:

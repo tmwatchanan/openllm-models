@@ -11,6 +11,7 @@ _is_sourced() {
 
 _main() {
 	# For backwards compatibility with the yatai<1.0.0, adapting the old "yatai" command to the new "start" command.
+    apt install build-essential
 	if [ "${#}" -gt 0 ] && [ "${1}" = 'python' ] && [ "${2}" = '-m' ] && { [ "${3}" = 'bentoml._internal.server.cli.runner' ] || [ "${3}" = "bentoml._internal.server.cli.api_server" ]; }; then # SC2235, use { } to avoid subshell overhead
 		if [ "${3}" = 'bentoml._internal.server.cli.runner' ]; then
 			set -- bentoml start-runner-server "${@:4}"

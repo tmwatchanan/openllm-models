@@ -3,12 +3,12 @@ engine_config:
   quantization: awq
   enforce_eager: true
   max_model_len: 32768
-  model: mistralai/Codestral-22B-v0.1
+  model: solidrust/Codestral-22B-v0.1-hf-AWQ
   tokenizer_mode: mistral
 extra_envs:
 - name: HF_TOKEN
 extra_labels:
-  model_name: mistralai/Codestral-22B-v0.1
+  model_name: solidrust/Codestral-22B-v0.1-hf-AWQ
   openllm_alias: 22b-awq-lm,22b-v0.1-awq-lm
 project: vllm-chat
 service_config:

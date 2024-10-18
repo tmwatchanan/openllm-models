@@ -1,5 +1,5 @@
 --index-url https://pypi.org/simple
---extra-index-url https://flashinfer.ai/whl/cu121/torch2.3
+--extra-index-url https://flashinfer.ai/whl/cu124/torch2.4
 
 aiohappyeyeballs==2.4.2
 aiohttp==3.10.6
@@ -29,7 +29,7 @@ einops==0.8.0
 exceptiongroup==1.2.2
 fastapi==0.115.0
 filelock==3.16.1
-flashinfer==0.1.2+cu121torch2.3
+flashinfer==0.1.6+cu124torch2.4
 frozenlist==1.4.1
 fs==2.4.16
 fsspec==2024.9.0
@@ -144,7 +144,7 @@ urllib3==2.2.3
 uv==0.4.17
 uvicorn==0.31.0
 uvloop==0.20.0
-vllm==0.6.2
+vllm==0.6.3.post1
 watchfiles==0.24.0
 wcwidth==0.2.13
 websockets==13.1

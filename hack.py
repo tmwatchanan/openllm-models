@@ -58,16 +58,16 @@ def main():
         [
             "_next/static/chunks/app/chat/page-*.js",
         ],
-        old_pattern='/v1/models"',
-        new_pattern="./v1/models",
+        old_pattern='"/v1/models"',
+        new_pattern='"./v1/models"',
     )
     rename_in_directory(
         base_directory,
         [
             "_next/static/chunks/app/chat/page-*.js",
         ],
-        old_pattern='/v1/chat/completions"',
-        new_pattern='./v1/chat/completions"',
+        old_pattern='"/v1/chat/completions"',
+        new_pattern='"./v1/chat/completions"',
     )
 
 

@@ -1,11 +1,11 @@
 service: service:VLLM
 name: codestral
-version: 22b-v0.1-fp16-1802-lm
+version: 22b-v0.1-awq-1802-lm
 bentoml_version: 1.3.7
 creation_time: '2024-09-27T22:06:09.973226+00:00'
 labels:
   model_name: mistralai/Codestral-22B-v0.1
-  openllm_alias: 22b-lm,22b-v0.1-lm
+  openllm_alias: 22b-awq-lm,22b-v0.1-awq-lm
   platforms: linux
   source: https://github.com/bentoml/openllm-models/tree/main/src/vllm-chat
 models: []

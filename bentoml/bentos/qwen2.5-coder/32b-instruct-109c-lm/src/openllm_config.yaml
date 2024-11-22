@@ -1,5 +1,5 @@
 engine_config:
-  max_model_len: 32768
+  max_model_len: 20480
   model: Qwen/Qwen2.5-Coder-32B-Instruct
 extra_labels:
   model_name: Qwen/Qwen2.5-Coder-32B-Instruct

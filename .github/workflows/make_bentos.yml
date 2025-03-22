@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - nightly
+  pull_request:
+    branches:
+      - nightly
 
 permissions:
   contents: write
@@ -13,44 +16,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
 
-    - name: Make bentos
-      run: |
-        python -m pip install --upgrade pip
-        cd src
-        pip install -r make_requirements.txt
-        make
-        cd ..
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install jinja2 openllm
+      - name: Make bentos
+        run: |
+          cd src
+          make
+          cd ..
 
-    - name: Run gen_readme.py
-      run: python gen_readme.py
+      - name: Run gen_readme.py
+        run: uv run tools/gen_readme.py
 
-    - name: Configure git
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+      - name: Configure git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Commit and push changes
-      run: |
-        if [[ -n $(git status -s) ]]; then
-          git add bentoml/bentos/*
-          git add README.md
-          git commit -m "chore: make bentos"
-          git push origin nightly
-        else
-          echo "No changes to commit"
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push changes
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            git add bentoml/bentos/*
+            git add .github
+            git commit -m "chore: make bentos [generated]"
+
+            # Determine the target branch based on the event type
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              # For pull requests, push to the head branch that triggered the PR
+              TARGET_BRANCH="${{ github.head_ref }}"
+            else
+              # For direct pushes to nightly, push to nightly
+              TARGET_BRANCH="nightly"
+            fi
+
+            echo "Pushing changes to branch: $TARGET_BRANCH"
+            git push origin "$TARGET_BRANCH"
+          else
+            echo "No changes to commit"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

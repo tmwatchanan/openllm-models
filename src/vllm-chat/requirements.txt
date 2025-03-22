@@ -1,4 +1,7 @@
-vllm==0.6.6post1
+bentoml>=1.4.5
+vllm==0.8.0
+kantoku>=0.18.1
+fastapi
+openai>=1.61.0
 pyyaml
-pillow
-openai
+Pillow

@@ -9,16 +9,22 @@
       "input": {
         "properties": {
           "prompt": {
-            "default": "what is this?",
+            "default": "Who are you? Please respond in pirate speak!",
             "title": "Prompt",
             "type": "string"
+          },
+          "max_tokens": {
+            "default": 4096,
+            "maximum": 4096,
+            "minimum": 128,
+            "title": "Max Tokens",
+            "type": "integer"
           }
         },
         "title": "Input",
         "type": "object"
       },
       "output": {
-        "title": "IORootModel[str]",
         "type": "string",
         "is_stream": true,
         "media_type": "text/event-stream"
@@ -26,13 +32,13 @@
       "is_task": false
     },
     {
-      "name": "generate_with_image",
-      "route": "/generate_with_image",
+      "name": "sights",
+      "route": "/sights",
       "batchable": false,
       "input": {
         "properties": {
           "prompt": {
-            "default": "what is this?",
+            "default": "Who are you? Please respond in pirate speak!",
             "title": "Prompt",
             "type": "string"
           },
@@ -41,13 +47,19 @@
             "title": "Image",
             "format": "image",
             "type": "file"
+          },
+          "max_tokens": {
+            "default": 4096,
+            "maximum": 4096,
+            "minimum": 128,
+            "title": "Max Tokens",
+            "type": "integer"
           }
         },
         "title": "Input",
         "type": "object"
       },
       "output": {
-        "title": "IORootModel[str]",
         "type": "string",
         "is_stream": true,
         "media_type": "text/event-stream"

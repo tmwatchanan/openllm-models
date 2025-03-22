@@ -1,21 +1,4 @@
-'phi3:3.8b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: phi3
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: microsoft/Phi-3-mini-4k-instruct
-    max_model_len: 4096
-    dtype: half
-  chat_template: phi-3
-  extra_labels:
-    openllm_alias: 3.8b,3.8b-mini,3.8b-mini-instruct-4k-fp16
-    model_name: microsoft/Phi-3-mini-4k-instruct
-'phi4:14b-fp16':
+"phi4:14b":
   project: vllm-chat
   service_config:
     name: phi4
@@ -26,108 +9,63 @@
       gpu_type: nvidia-a100-80gb
   engine_config:
     model: microsoft/phi-4
-    max_model_len: 4096
-    dtype: half
-  chat_template: phi-3
-  extra_labels:
-    openllm_alias: 14b
-    model_name: microsoft/phi-4
-'llama2:7b-chat-fp16':
+    max_model_len: 8192
+  server_config:
+    chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set offset = 1 %}\n{% else %}\n    {% set offset = 0 %}\n{% endif %}\n\n{% for message in messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == offset) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {{ '<|' + message['role'] + '|>\\n' + message['content'].strip() + '<|end|>' + '\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{ '<|assistant|>\\n' }}\n    {% endif %}\n{% endfor %}\n"
+  alias:
+    - 14b
+"pixtral:12b-2409":
   project: vllm-chat
+  vision: true
   service_config:
-    name: llama2
+    name: pixtral
     traffic:
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-t4
-  extra_envs:
-    - name: HF_TOKEN
-  engine_config:
-    model: meta-llama/Llama-2-7b-chat-hf
-    max_model_len: 1024
-    dtype: half
-  chat_template: llama-2-chat
-  extra_labels:
-    openllm_alias: 7b,7b-chat
-    model_name: meta-llama/Llama-2-7b-chat-hf
-'llama2:13b-chat-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-tesla-a100
-  extra_envs:
-    - name: HF_TOKEN
-  engine_config:
-    model: meta-llama/Llama-2-13b-chat-hf
-    max_model_len: 1024
-    dtype: half
-  chat_template: llama-2-chat
-  extra_labels:
-    openllm_alias: 13b,13b-chat
-    model_name: meta-llama/Llama-2-13b-chat-hf
-'llama2:70b-chat-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
       gpu_type: nvidia-a100-80gb
-  extra_envs:
-    - name: HF_TOKEN
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: meta-llama/Llama-2-70b-chat-hf
-    max_model_len: 1024
-    dtype: half
-    tensor_parallel_size: 2
-  chat_template: llama-2-chat
-  extra_labels:
-    openllm_alias: 70b,70b-chat
-    model_name: meta-llama/Llama-2-70b-chat-hf
-'llama2:7b-chat-awq-4bit':
+    model: mistralai/Pixtral-12B-2409
+    tokenizer_mode: mistral
+    enable_prefix_caching: false
+    enable_chunked_prefill: false
+    limit_mm_per_prompt:
+      image: 5
+    max_model_len: 32768
+  requirements:
+    - mistral_common[opencv]
+  alias:
+    - 12b-2409
+"pixtral:124b-2411":
   project: vllm-chat
+  vision: true
   service_config:
-    name: llama2
+    name: pixtral
     traffic:
       timeout: 300
     resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
+      gpu: 4
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: TheBloke/Llama-2-7B-Chat-AWQ
-    max_model_len: 1024
-    quantization: awq
-    enforce_eager: true
-  chat_template: llama-2-chat
-  extra_labels:
-    openllm_alias: 7b-4bit,7b-chat-4bit
-    model_name: TheBloke/Llama-2-7B-Chat-AWQ
-'mistral:7b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: mistral
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: TheBloke/Mistral-7B-Instruct-v0.1-AWQ
-    max_model_len: 1024
-    quantization: awq
-    enforce_eager: true
+    model: mistralai/Pixtral-Large-Instruct-2411
+    tokenizer_mode: mistral
+    enable_chunked_prefill: false
+    enable_prefix_caching: false
+    limit_mm_per_prompt:
+      image: 5
+    max_model_len: 16384
     dtype: half
-  chat_template: mistral-instruct
-  extra_labels:
-    openllm_alias: 7b-4bit,7b-instruct-4bit
-    model_name: TheBloke/Mistral-7B-Instruct-v0.1-AWQ
-'mistral:7b-instruct-fp16':
+    tensor_parallel_size: 4
+  requirements:
+    - mistral_common[opencv]
+  alias:
+    - 124b-2411
+    - 124b
+"mistral:8b-instruct":
   project: vllm-chat
   service_config:
     name: mistral
@@ -136,18 +74,18 @@
     resources:
       gpu: 1
       gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: mistralai/Mistral-7B-Instruct-v0.1
-    max_model_len: 1024
-    enforce_eager: true
+    model: mistralai/Ministral-8B-Instruct-2410
     dtype: half
-  extra_envs:
-    - name: HF_TOKEN
-  chat_template: mistral-instruct
-  extra_labels:
-    openllm_alias: 7b,7b-instruct
-    model_name: mistralai/Mistral-7B-Instruct-v0.1
-'mistral:24b-instruct-nemo':
+  build:
+    exclude:
+      - "consolidated*"
+  alias:
+    - 8b-2410
+    - 8b
+"mistral:24b-small-instruct-2501":
   project: vllm-chat
   service_config:
     name: mistral
@@ -156,39 +94,21 @@
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: mistralai/Mistral-Nemo-Instruct-2407
-    max_model_len: 2048
-    enforce_eager: true
-    dtype: half
-  chat_template: mistral-instruct
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: nemo,nemo-instruct
-    model_name: mistralai/Mistral-Nemo-Instruct-2407
-'codestral:22b-v0.1-fp16':
+    model: mistralai/Mistral-Small-24B-Instruct-2501
+  build:
+    exclude:
+      - "consolidated*"
+  alias:
+    - 24b-2501
+    - 24b
+"mistral-large:123b-instruct-2407":
   project: vllm-chat
-  service_config:
-    name: codestral
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: mistralai/Codestral-22B-v0.1
-    max_model_len: 8192
-    enforce_eager: true
-    dtype: half
-  chat_template: mistral-instruct
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 22b,22b-v0.1
-    model_name: mistralai/Codestral-22B-v0.1
-'mistral-large:123b-instruct-fp16':
-  project: vllm-chat
+  build:
+    exclude:
+      - "consolidated*"
   service_config:
     name: mistral-large
     traffic:
@@ -196,240 +116,37 @@
     resources:
       gpu: 4
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
     model: mistralai/Mistral-Large-Instruct-2407
     max_model_len: 2048
     dtype: half
     tensor_parallel_size: 4
-  chat_template: mistral-instruct
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 123b, 123b-instruct-2407
-    model_name: mistralai/Mistral-Large-Instruct-2407
-'mistral-large:123b-instruct-awq-4bit':
+  alias:
+    - 123b-2407
+    - 123b
+"gemma2:2b-instruct":
   project: vllm-chat
   service_config:
-    name: mistral-large
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: casperhansen/mistral-large-instruct-2407-awq
-    max_model_len: 2048
-    dtype: half
-  chat_template: mistral-instruct
-  extra_labels:
-    openllm_alias: 123b-4bit,123b-instruct-2407-4bit
-    model_name: casperhansen/mistral-large-instruct-2407-awq
-'llama3:8b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: llama3
+    name: gemma2
     traffic:
       timeout: 300
     resources:
       gpu: 1
       gpu_type: nvidia-rtx-3060
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: casperhansen/llama-3-8b-instruct-awq
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 8b-4bit,8b-instruct-4bit
-    model_name: casperhansen/llama-3-8b-instruct-awq
-'llama3:70b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: llama3
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: casperhansen/llama-3-70b-instruct-awq
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 70b-4bit,70b-instruct-4bit
-    model_name: casperhansen/llama-3-70b-instruct-awq
-'llama3:8b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: meta-llama/Meta-Llama-3-8B-Instruct
+    model: google/gemma-2-2b-it
     max_model_len: 2048
     dtype: half
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 8b,8b-instruct
-    model_name: meta-llama/Meta-Llama-3-8B-Instruct
-'llama3:70b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: meta-llama/Meta-Llama-3-70B-Instruct
-    max_model_len: 2048
-    tensor_parallel_size: 2
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 70b,70b-instruct
-    model_name: meta-llama/Meta-Llama-3-70B-Instruct
-'llama3.2:1b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3.2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: meta-llama/Llama-3.2-1B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 1b,1b-instruct
-    model_name: meta-llama/Llama-3.2-1B-Instruct
-'llama3.2:3b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3.2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: meta-llama/Llama-3.2-3B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 3b,3b-instruct
-    model_name: meta-llama/Llama-3.2-3B-Instruct
-'llama3.1:8b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3.1
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-tesla-l4
-  extra_envs:
-    - name: HF_TOKEN
-  engine_config:
-    model: meta-llama/Meta-Llama-3.1-8B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 8b,8b-instruct
-    model_name: meta-llama/Meta-Llama-3.1-8B-Instruct
-'llama3.1:8b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: llama3.1
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 8b-4bit,8b-instruct-4bit
-    model_name: hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4
-'llama3.1:70b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3.1
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: meta-llama/Meta-Llama-3.1-70B-Instruct
-    max_model_len: 2048
-    tensor_parallel_size: 2
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 70b,70b-instruct
-    model_name: meta-llama/Meta-Llama-3.1-70B-Instruct
-'llama3.1-nemotron:70b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: llama3.1-nemotron
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-    max_model_len: 2048
-    tensor_parallel_size: 2
-  extra_labels:
-    openllm_alias: 70b
-    model_name: nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
-'llama3.1:70b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: llama3.1
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 70b-4bit,70b-instruct-4bit
-    model_name: hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
-'llama3.1:405b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: llama3.1
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 4
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: hugging-quants/Meta-Llama-3.1-405B-Instruct-AWQ-INT4
-    max_model_len: 2048
-    quantization: awq
-    tensor_parallel_size: 4
-  extra_labels:
-    openllm_alias: 405b-4bit,405b-instruct-4bit
-    model_name: hugging-quants/Meta-Llama-3.1-405B-Instruct-AWQ-INT4
-'gemma2:9b-instruct-fp16':
+    enable_prefix_caching: false
+  server_config:
+    chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
+  alias:
+    - 2b
+"gemma2:9b-instruct":
   project: vllm-chat
   service_config:
     name: gemma2
@@ -438,21 +155,18 @@
     resources:
       gpu: 1
       gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
   engine_config:
     model: google/gemma-2-9b-it
     max_model_len: 2048
     dtype: half
-  extra_labels:
-    openllm_alias: 9b,9b-instruct
-    model_name: google/gemma-2-9b-it
-  extra_envs:
-    - name: VLLM_ATTENTION_BACKEND
-      value: FLASHINFER
-    - name: HF_TOKEN
-  extra_requirements:
-    - --extra-index-url https://flashinfer.ai/whl/cu121/torch2.3
-    - flashinfer==0.1.2+cu121torch2.3
-'gemma2:27b-instruct-fp16':
+    enable_prefix_caching: false
+  server_config:
+    chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
+  alias:
+    - 9b
+"gemma2:27b-instruct":
   project: vllm-chat
   service_config:
     name: gemma2
@@ -461,159 +175,18 @@
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
     model: google/gemma-2-27b-it
     max_model_len: 2048
     dtype: half
-  extra_labels:
-    openllm_alias: 27b,27b-instruct
-    model_name: google/gemma-2-27b-it
-  extra_envs:
-    - name: VLLM_ATTENTION_BACKEND
-      value: FLASHINFER
-    - name: HF_TOKEN
-  extra_requirements:
-    - --extra-index-url https://flashinfer.ai/whl/cu121/torch2.3
-    - flashinfer==0.1.2+cu121torch2.3
-'gemma:2b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: gemma
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: google/gemma-2b-it
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 2b,2b-instruct
-    model_name: google/gemma-2b-it
-  extra_envs:
-    - name: HF_TOKEN
-'gemma:7b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: gemma
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-  engine_config:
-    model: google/gemma-7b-it
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 7b,7b-instruct
-    model_name: google/gemma-7b-it
-  extra_envs:
-    - name: HF_TOKEN
-'gemma:7b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: gemma
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: casperhansen/gemma-7b-it-awq
-    max_model_len: 2048
-    quantization: awq
-  chat_template: gemma-it
-  extra_labels:
-    openllm_alias: 7b-4bit,7b-instruct-4bit
-    model_name: casperhansen/gemma-7b-it-awq
-'mixtral:8x7b-instruct-v0.1-fp16':
-  project: vllm-chat
-  service_config:
-    name: mixtral
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: mistralai/Mixtral-8x7B-Instruct-v0.1
-    max_model_len: 2048
-    tensor_parallel_size: 2
-  chat_template: mistral-instruct
-  extra_envs:
-    - name: HF_TOKEN
-  extra_labels:
-    openllm_alias: 8x7b,8x7b-instruct
-    model_name: mistralai/Mixtral-8x7B-Instruct-v0.1
-'mixtral:8x7b-instruct-v0.1-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: mixtral
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-tesla-a100
-  engine_config:
-    model: casperhansen/mixtral-instruct-awq
-    max_model_len: 2048
-    quantization: awq
-    gpu_memory_utilization: 0.8
-  chat_template: mistral-instruct
-  extra_labels:
-    openllm_alias: 8x7b-4bit
-    model_name: casperhansen/mixtral-instruct-awq
-'qwen2.5:0.5b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: qwen2.5
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: Qwen/Qwen2.5-0.5B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 0.5b,0.5b-instruct
-    model_name: Qwen/Qwen2.5-0.5B-Instruct
-'qwen2.5:1.5b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: qwen2.5
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: Qwen/Qwen2.5-1.5B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 1.5b,1.5b-instruct
-    model_name: Qwen/Qwen2.5-1.5B-Instruct
-'qwen2.5:3b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: qwen2.5
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-rtx-3060
-  engine_config:
-    model: Qwen/Qwen2.5-3B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 3b,3b-instruct
-    model_name: Qwen/Qwen2.5-3B-Instruct
-'qwen2.5:7b-instruct-fp16':
+    enable_prefix_caching: false
+  server_config:
+    chat_template: "{% if messages[0]['role'] == 'system' %}\n    {% set loop_messages = messages[1:] %}\n    {% set system_message = messages[0]['content'].strip() + '\\n\\n' %}\n{% else %}\n    {% set loop_messages = messages %}\n    {% set system_message = '' %}\n{% endif %}\n\n{% for message in loop_messages %}\n    {% if (message['role'] == 'user') != (loop.index0 % 2 == 0) %}\n        {{ raise_exception('Conversation roles must alternate user/assistant/user/assistant/...') }}\n    {% endif %}\n\n    {% if loop.index0 == 0 %}\n        {% set content = system_message + message['content'] %}\n    {% else %}\n        {% set content = message['content'] %}\n    {% endif %}\n\n    {% if (message['role'] == 'assistant') %}\n        {% set role = 'model' %}\n    {% else %}\n        {% set role = message['role'] %}\n    {% endif %}\n\n    {{ '<start_of_turn>' + role + '\\n' + content.strip() + '<end_of_turn>\\n' }}\n\n    {% if loop.last and message['role'] == 'user' and add_generation_prompt %}\n        {{'<start_of_turn>model\\n'}}\n    {% endif %}\n{% endfor %}\n"
+  alias:
+    - 27b
+"qwen2.5:7b-instruct":
   project: vllm-chat
   service_config:
     name: qwen2.5
@@ -625,11 +198,9 @@
   engine_config:
     model: Qwen/Qwen2.5-7B-Instruct
     max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 7b,7b-instruct
-    model_name: Qwen/Qwen2.5-7B-Instruct
-'qwen2.5:14b-instruct-fp16':
+  alias:
+    - 7b
+"qwen2.5:14b-instruct":
   project: vllm-chat
   service_config:
     name: qwen2.5
@@ -641,11 +212,51 @@
   engine_config:
     model: Qwen/Qwen2.5-14B-Instruct
     max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 14b,14b-instruct
-    model_name: Qwen/Qwen2.5-14B-Instruct
-'qwen2.5:32b-instruct-fp16':
+  alias:
+    - 14b
+"qwen2.5:14b-instruct-awq":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+  engine_config:
+    model: Qwen/Qwen2.5-14B-Instruct-AWQ
+    max_model_len: 4096
+  alias:
+    - 14b-awq
+"qwen2.5:14b-instruct-gptq-w4a16":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+  engine_config:
+    model: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int4
+    max_model_len: 4096
+  alias:
+    - 14b-w4a16
+"qwen2.5:14b-instruct-gptq-w8a8":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+  engine_config:
+    model: Qwen/Qwen2.5-14B-Instruct-GPTQ-Int4
+    max_model_len: 4096
+  alias:
+    - 14b-w4a8
+"qwen2.5:32b-instruct":
   project: vllm-chat
   service_config:
     name: qwen2.5
@@ -657,11 +268,57 @@
   engine_config:
     model: Qwen/Qwen2.5-32B-Instruct
     max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 32b,32b-instruct
-    model_name: Qwen/Qwen2.5-32B-Instruct
-'qwen2.5:72b-instruct-fp16':
+  alias:
+    - 32b
+"qwen2.5:32b-instruct-awq":
+  project: vllm-chat
+  engine_config:
+    max_model_len: 20480
+    model: Qwen/Qwen2.5-32B-Instruct-AWQ
+  service_config:
+    name: qwen2.5
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  server_config:
+    tool_call_parser: "llama3_json"
+  alias:
+    - 32b-awq
+"qwen2.5:32b-instruct-gptq-w4a16":
+  project: vllm-chat
+  engine_config:
+    max_model_len: 20480
+    model: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4
+  service_config:
+    name: qwen2.5
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  server_config:
+    tool_call_parser: "llama3_json"
+  alias:
+    - 32b-w4a16
+"qwen2.5:32b-instruct-gptq-w8a8":
+  project: vllm-chat
+  engine_config:
+    max_model_len: 8192
+    model: Qwen/Qwen2.5-32B-Instruct-GPTQ-Int8
+  service_config:
+    name: qwen2.5
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  server_config:
+    tool_call_parser: "llama3_json"
+  alias:
+    - 32b-w8a8
+"qwen2.5:72b-instruct":
   project: vllm-chat
   service_config:
     name: qwen2.5
@@ -672,228 +329,231 @@
       gpu_type: nvidia-a100-80gb
   engine_config:
     model: Qwen/Qwen2.5-72B-Instruct
+    tensor_parallel_size: 2
     max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 72b,72b-instruct
-    model_name: Qwen/Qwen2.5-72B-Instruct
-'qwen2:0.5b-instruct-fp16':
+"qwen2.5:72b-instruct-awq":
   project: vllm-chat
   service_config:
-    name: qwen2
+    name: qwen2.5
     traffic:
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-rtx-3060
+      gpu_type: nvidia-a100-80gb
   engine_config:
-    model: Qwen/Qwen2-0.5B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 0.5b,0.5b-instruct
-    model_name: Qwen/Qwen2-0.5B-Instruct
-'qwen2:1.5b-instruct-fp16':
+    model: Qwen/Qwen2.5-72B-Instruct-AWQ
+    max_model_len: 8192
+  alias:
+    - 72b
+"qwen2.5:72b-instruct-gptq-w4a16":
   project: vllm-chat
   service_config:
-    name: qwen2
+    name: qwen2.5
     traffic:
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-rtx-3060
+      gpu_type: nvidia-a100-80gb
   engine_config:
-    model: Qwen/Qwen2-1.5B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 1.5b,1.5b-instruct
-    model_name: Qwen/Qwen2-1.5B-Instruct
-'qwen2:7b-instruct-awq-4bit':
+    model: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int4
+    max_model_len: 4096
+  alias:
+    - 72b-w4a16
+"qwen2.5:72b-instruct-gptq-w8a8":
   project: vllm-chat
   service_config:
-    name: qwen2
+    name: qwen2.5
     traffic:
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-rtx-3060
+      gpu_type: nvidia-a100-80gb
   engine_config:
-    model: Qwen/Qwen2-7B-Instruct-AWQ
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 7b-4bit,7b-instruct-4bit
-    model_name: Qwen/Qwen2-7B-Instruct-AWQ
-'qwen2:7b-instruct-fp16':
+    model: Qwen/Qwen2.5-72B-Instruct-GPTQ-Int8
+    max_model_len: 8192
+  alias:
+    - 72b-w8a8
+"qwen2.5-coder:3b-instruct":
   project: vllm-chat
   service_config:
-    name: qwen2
-    traffic:
-      timeout: 300
+    name: qwen2.5-coder
     resources:
       gpu: 1
       gpu_type: nvidia-l4
-  engine_config:
-    model: Qwen/Qwen2-7B-Instruct
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 7b,7b-instruct
-    model_name: Qwen/Qwen2-7B-Instruct
-'qwen2:72b-instruct-awq-4bit':
-  project: vllm-chat
-  service_config:
-    name: qwen2
     traffic:
       timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-3B-Instruct
+    max_model_len: 8192
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 3b
+"qwen2.5-coder:7b-instruct":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
     resources:
       gpu: 1
-      gpu_type: nvidia-a100-80gb
+      gpu_type: nvidia-l4
+    traffic:
+      timeout: 300
   engine_config:
-    model: Qwen/Qwen2-72B-Instruct-AWQ
-    max_model_len: 2048
-    quantization: awq
-  extra_labels:
-    openllm_alias: 72b-4bit,72b-instruct-4bit
-    model_name: Qwen/Qwen2-72B-Instruct-AWQ
-'qwen2:57b-a14b-instruct-fp16':
+    model: Qwen/Qwen2.5-Coder-7B-Instruct
+    max_model_len: 8192
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 7b
+"qwen2.5-coder:7b-instruct-awq":
   project: vllm-chat
   service_config:
-    name: qwen2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: Qwen/Qwen2-57B-A14B-Instruct
-    max_model_len: 2048
-    dtype: half
-    tensor_parallel_size: 2
-  extra_labels:
-    openllm_alias: 57b-a14b,57b-a14b-instruct
-    model_name: Qwen/Qwen2-57B-A14B-Instruct
-'qwen2:72b-instruct-fp16':
-  project: vllm-chat
-  service_config:
-    name: qwen2
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 2
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: Qwen/Qwen2-72B-Instruct
-    max_model_len: 2048
-    dtype: half
-    tensor_parallel_size: 2
-  extra_labels:
-    openllm_alias: 72b,72b-instruct
-    model_name: Qwen/Qwen2-72B-Instruct
-'phi3:3.8b-instruct-ggml-q4':
-  project: llamacpp-chat
-  service_config:
-    name: phi3
-    traffic:
-      timeout: 300
-    resources:
-      memory: 3Gi
-  engine_config:
-    repo_id: microsoft/Phi-3-mini-4k-instruct-gguf
-    max_model_len: 2048
-    filename: "Phi-3-mini-4k-instruct-q4.gguf"
-  extra_labels:
-    openllm_alias: 3.8b-ggml-q4,3.8b-mini-instruct-4k-ggml-q4
-    model_name: microsoft/Phi-3-mini-4k-instruct-gguf
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
-'llama3.2:11b-vision-instruct':
-  project: vllm-chat
-  service_config:
-    name: llama3.2
-    traffic:
-      timeout: 300
+    name: qwen2.5-coder
     resources:
       gpu: 1
-      gpu_type: nvidia-a100-80gb
+      gpu_type: nvidia-l4
+    traffic:
+      timeout: 300
   engine_config:
-    model: meta-llama/Llama-3.2-11B-Vision-Instruct
-    enforce_eager: true
-    limit_mm_per_prompt:
-      image: 1
+    model: Qwen/Qwen2.5-Coder-7B-Instruct-AWQ
     max_model_len: 16384
-    max_num_seqs: 16
-  extra_labels:
-    openllm_alias: 11b-vision
-    model_name: meta-llama/Llama-3.2-11B-Vision-Instruct
-  extra_envs:
-    - name: HF_TOKEN
-'pixtral:12b-240910':
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 7b-awq
+"qwen2.5-coder:7b-instruct-gptq-w4a16":
   project: vllm-chat
   service_config:
-    name: pixtral
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
     traffic:
       timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-7B-Instruct-GPTQ-Int4
+    max_model_len: 16384
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 7b-w4a16
+"qwen2.5-coder:7b-instruct-gptq-w8a8":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    traffic:
+      timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-7B-Instruct-GPTQ-Int8
+    max_model_len: 8192
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 7b-w8a8
+"qwen2.5-coder:14b-instruct":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-14B-Instruct
+    max_model_len: 4096
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 14b
+"qwen2.5-coder:14b-instruct-awq":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-14B-Instruct-AWQ
+    max_model_len: 16384
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 14b-awq
+"qwen2.5-coder:14b-instruct-gptq-w4a16":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-14B-Instruct-GPTQ-Int4
+    max_model_len: 16384
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 14b-w4a16
+"qwen2.5-coder:14b-instruct-gptq-w8a8":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    traffic:
+      timeout: 300
+  engine_config:
+    model: Qwen/Qwen2.5-Coder-14B-Instruct-GPTQ-Int8
+    max_model_len: 8192
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 14b-w8a8
+"qwen2.5-coder:32b-instruct":
+  project: vllm-chat
+  service_config:
+    name: qwen2.5-coder
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: mistral-community/pixtral-12b-240910
-    tokenizer_mode: mistral
-    enable_prefix_caching: true
-    enable_chunked_prefill: false
-    limit_mm_per_prompt:
-      image: 1
-    max_model_len: 16384
-  extra_labels:
-    openllm_alias: 12b, 12b-vision
-    model_name: mistral-community/pixtral-12b-240910
-  extra_requirements:
-    - mistral_common[opencv]
-'llama3.2:1b-instruct-ggml-fp16-darwin':
-  project: llamacpp-chat
-  service_config:
-    name: llama3.2
     traffic:
       timeout: 300
-    resources:
-      cpu: 1
-      memory: 3Gi
   engine_config:
-    repo_id: unsloth/Llama-3.2-1B-Instruct-GGUF
-    max_model_len: 2048
-    filename: "Llama-3.2-1B-Instruct-F16.gguf"
-  extra_labels:
-    openllm_alias: llama3.2,1b-instruct-ggml-fp16-darwin
-    model_name: unsloth/Llama-3.2-1B-Instruct-GGUF
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
-'llama3.2:1b-instruct-ggml-fp16-linux':
-  project: llamacpp-chat
-  service_config:
-    name: llama3.2
-    traffic:
-      timeout: 300
-    resources:
-      cpu: 1
-      memory: 3Gi
-  engine_config:
-    repo_id: unsloth/Llama-3.2-1B-Instruct-GGUF
-    max_model_len: 2048
-    filename: "Llama-3.2-1B-Instruct-F16.gguf"
-  extra_labels:
-    openllm_alias: llama3.2,1b-instruct-ggml-fp16-linux
-    model_name: unsloth/Llama-3.2-1B-Instruct-GGUF
-    platforms: linux
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
-'qwen2.5:72b-instruct-ggml-q4-darwin':
+    model: Qwen/Qwen2.5-Coder-32B-Instruct
+    max_model_len: 8192
+  server_config:
+    enable_auto_tool_choice: true
+    enable_tool_call_parser: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 32b
+"qwen2.5:72b-instruct-ggml-q4-darwin":
   project: llamacpp-chat
   engine_config:
     max_model_len: 2048
@@ -912,49 +572,40 @@
       - qwen2.5-72b-instruct-q4_k_m-00012-of-00012.gguf
     filename: qwen2.5-72b-instruct-q4_k_m-00001-of-00012.gguf
     repo_id: Qwen/Qwen2.5-72B-Instruct-GGUF
-  extra_labels:
-    model_name: Qwen/Qwen2.5-72B-Instruct-GGUF
-    openllm_alias: 72b-ggml-q4
-    platforms: macos
   service_config:
     name: qwen2.5
     resources:
       memory: 60Gi
     traffic:
       timeout: 300
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
-'qwen2.5:32b-instruct-ggml-fp16-darwin':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_METAL=on"
+  labels:
+    platforms: darwin
+"qwen2.5:32b-instruct-ggml-darwin":
   project: llamacpp-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-32B-Instruct-GGUF
-    openllm_alias: 32b-ggml-fp16
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
   engine_config:
     max_model_len: 2048
     additional_files:
-      - qwen2.5-32b-instruct-fp16-00001-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00002-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00003-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00004-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00005-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00006-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00007-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00008-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00009-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00010-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00011-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00012-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00013-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00014-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00015-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00016-of-00017.gguf
-      - qwen2.5-32b-instruct-fp16-00017-of-00017.gguf
-    filename: qwen2.5-32b-instruct-fp16-00001-of-00017.gguf
+      - qwen2.5-32b-instruct-00001-of-00017.gguf
+      - qwen2.5-32b-instruct-00002-of-00017.gguf
+      - qwen2.5-32b-instruct-00003-of-00017.gguf
+      - qwen2.5-32b-instruct-00004-of-00017.gguf
+      - qwen2.5-32b-instruct-00005-of-00017.gguf
+      - qwen2.5-32b-instruct-00006-of-00017.gguf
+      - qwen2.5-32b-instruct-00007-of-00017.gguf
+      - qwen2.5-32b-instruct-00008-of-00017.gguf
+      - qwen2.5-32b-instruct-00009-of-00017.gguf
+      - qwen2.5-32b-instruct-00010-of-00017.gguf
+      - qwen2.5-32b-instruct-00011-of-00017.gguf
+      - qwen2.5-32b-instruct-00012-of-00017.gguf
+      - qwen2.5-32b-instruct-00013-of-00017.gguf
+      - qwen2.5-32b-instruct-00014-of-00017.gguf
+      - qwen2.5-32b-instruct-00015-of-00017.gguf
+      - qwen2.5-32b-instruct-00016-of-00017.gguf
+      - qwen2.5-32b-instruct-00017-of-00017.gguf
+    filename: qwen2.5-32b-instruct-00001-of-00017.gguf
     repo_id: Qwen/Qwen2.5-32B-Instruct-GGUF
   service_config:
     name: qwen2.5
@@ -962,15 +613,13 @@
       memory: 60Gi
     traffic:
       timeout: 300
-'qwen2.5:14b-instruct-ggml-q4-darwin':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_METAL=on"
+  labels:
+    platforms: darwin
+"qwen2.5:14b-instruct-ggml-q4-darwin":
   project: llamacpp-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-14B-Instruct-GGUF
-    openllm_alias: 14b-ggml-q4
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
   engine_config:
     max_model_len: 2048
     additional_files:
@@ -985,15 +634,13 @@
       memory: 60Gi
     traffic:
       timeout: 300
-'qwen2.5:14b-instruct-ggml-q8-darwin':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_METAL=on"
+  labels:
+    platforms: darwin
+"qwen2.5:14b-instruct-ggml-q8-darwin":
   project: llamacpp-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-14B-Instruct-GGUF
-    openllm_alias: 14b-ggml-q8
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
   engine_config:
     max_model_len: 2048
     additional_files:
@@ -1009,76 +656,21 @@
       memory: 60Gi
     traffic:
       timeout: 300
-'qwen2.5:32b-instruct-awq-4bit':
-  project: vllm-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-32B-Instruct-AWQ
-    openllm_alias: 32b-4bit
-    platforms: linux
-  engine_config:
-    max_model_len: 20480
-    model: Qwen/Qwen2.5-32B-Instruct-AWQ
-  project: vllm-chat
-  service_config:
-    name: qwen2.5
-    resources:
-      gpu: 1
-      gpu_type: nvidia-tesla-a100
-    traffic:
-      timeout: 300
-'jamba1.5:mini-fp16':
-  project: vllm-chat
-  service_config:
-    name: jamba1.5
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 4
-      gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: ai21labs/AI21-Jamba-1.5-Mini
-    max_model_len: 2048
-    dtype: half
-    tensor_parallel_size: 4
-  extra_labels:
-    openllm_alias: mini
-    model_name: ai21labs/AI21-Jamba-1.5-Mini
-  extra_envs:
-    - name: HF_TOKEN
-'qwen2vl:7b-instruct-fp16':
-  project: vllm-chat
-  extra_labels:
-    model_name: Qwen/Qwen2-VL-7B-Instruct
-    openllm_alias: 7b
-    platforms: linux
-  engine_config:
-    max_model_len: 2048
-    model: Qwen/Qwen2-VL-7B-Instruct
-  project: vllm-chat
-  service_config:
-    name: qwen2vl
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
-    traffic:
-      timeout: 300
-'qwen2.5-coder:7b-instruct-ggml-fp16-darwin':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_METAL=on"
+  labels:
+    platforms: darwin
+"qwen2.5-coder:7b-instruct-ggml-darwin":
   project: llamacpp-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
-    openllm_alias: 7b-ggml-fp16-darwin
-    platforms: macos
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_METAL=on"
   engine_config:
     max_model_len: 2048
     additional_files:
-      - qwen2.5-coder-7b-instruct-fp16-00001-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00002-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00003-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00004-of-00004.gguf
-    filename: qwen2.5-coder-7b-instruct-fp16-00001-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00001-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00002-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00003-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00004-of-00004.gguf
+    filename: qwen2.5-coder-7b-instruct-00001-of-00004.gguf
     repo_id: Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
   service_config:
     name: qwen2.5-coder
@@ -1086,23 +678,21 @@
       memory: 16Gi
     traffic:
       timeout: 300
-'qwen2.5-coder:7b-instruct-ggml-fp16-linux':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_METAL=on"
+  labels:
+    platforms: darwin
+"qwen2.5-coder:7b-instruct-ggml-linux":
   project: llamacpp-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
-    openllm_alias: 7b-ggml-fp16-linux
-    platforms: linux
-  extra_envs:
-    - name: CMAKE_ARGS
-      value: "-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
   engine_config:
     max_model_len: 2048
     additional_files:
-      - qwen2.5-coder-7b-instruct-fp16-00001-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00002-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00003-of-00004.gguf
-      - qwen2.5-coder-7b-instruct-fp16-00004-of-00004.gguf
-    filename: qwen2.5-coder-7b-instruct-fp16-00001-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00001-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00002-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00003-of-00004.gguf
+      - qwen2.5-coder-7b-instruct-00004-of-00004.gguf
+    filename: qwen2.5-coder-7b-instruct-00001-of-00004.gguf
     repo_id: Qwen/Qwen2.5-Coder-7B-Instruct-GGUF
   service_config:
     name: qwen2.5-coder
@@ -1110,37 +700,151 @@
       memory: 16Gi
     traffic:
       timeout: 300
-'qwen2.5-coder:7b-instruct':
+    envs:
+      - name: CMAKE_ARGS
+        value: "-DGGML_BLAS=ON -DGGML_BLAS_VENDOR=OpenBLAS"
+"qwq:32b":
   project: vllm-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-Coder-7B-Instruct
-    openllm_alias: 7b
   service_config:
-    name: qwen2.5-coder
-    resources:
-      gpu: 1
-      gpu_type: nvidia-l4
+    name: qwq
     traffic:
       timeout: 300
-  engine_config:
-    model: Qwen/Qwen2.5-Coder-7B-Instruct
-    max_model_len: 20480
-'qwen2.5-coder:32b-instruct':
-  project: vllm-chat
-  extra_labels:
-    model_name: Qwen/Qwen2.5-Coder-32B-Instruct
-    openllm_alias: 32b
-  service_config:
-    name: qwen2.5-coder
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+      - name: UV_NO_BUILD_ISOLATION
+        value: 1
+  engine_config:
+    model: Qwen/QwQ-32B
+    max_model_len: 8192
+  server_config:
+    enable_reasoning: true
+    reasoning_parser: "deepseek_r1"
+    enable_auto_tool_choice: true
+    tool_call_parser: "llama3_json"
+  alias:
+    - 32b
+"llama3.1:8b-instruct":
+  embedding: true
+  project: vllm-chat
+  service_config:
+    name: llama3.1
     traffic:
       timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: Qwen/Qwen2.5-Coder-32B-Instruct
-    max_model_len: 20480
-"llama3.3:70b-instruct-fp16":
+    model: meta-llama/Meta-Llama-3.1-8B-Instruct
+    max_model_len: 2048
+  server_config:
+    tool_call_parser: "llama3_json"
+  alias:
+    - 8b
+"llama3.2:1b-instruct":
+  project: vllm-chat
+  service_config:
+    name: llama3.2
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: meta-llama/Llama-3.2-1B-Instruct
+    max_model_len: 8192
+  server_config:
+    tool_call_parser: "pythonic"
+  alias:
+    - 1b
+"llama3.2:3b-instruct":
+  embedding: true
+  project: vllm-chat
+  service_config:
+    name: llama3.2
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: meta-llama/Llama-3.2-3B-Instruct
+    max_model_len: 8192
+  server_config:
+    tool_call_parser: "pythonic"
+  alias:
+    - 3b
+"llama3.2:11b-vision-instruct":
+  project: vllm-chat
+  service_config:
+    name: llama3.2
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  build:
+    exclude:
+      - "original"
+  engine_config:
+    model: meta-llama/Llama-3.2-11B-Vision-Instruct
+    enforce_eager: true
+    limit_mm_per_prompt:
+      image: 1
+    max_model_len: 16384
+    max_num_seqs: 16
+  vision: true
+  server_config:
+    tool_call_parser: "pythonic"
+  alias:
+    - 11b
+"llama3.2:90b-vision-instruct":
+  project: vllm-chat
+  vision: true
+  service_config:
+    name: llama3.2
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 2
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: meta-llama/Llama-3.2-90B-Vision-Instruct
+    enforce_eager: true
+    limit_mm_per_prompt:
+      image: 1
+    max_model_len: 16384
+    max_num_seqs: 16
+  server_config:
+    tool_call_parser: "pythonic"
+  build:
+    exclude:
+      - "original"
+  alias:
+    - 90b
+"llama3.3:70b-instruct":
+  engine_config:
+    model: meta-llama/Llama-3.3-70B-Instruct
+    max_model_len: 2048
+    tensor_parallel_size: 2
+  build:
+    exclude:
+      - "original"
+      - "consolidated*"
+  server_config:
+    tool_call_parser: "pythonic"
   project: vllm-chat
   service_config:
     name: llama3.3
@@ -1149,125 +853,411 @@
     resources:
       gpu: 2
       gpu_type: nvidia-a100-80gb
-  engine_config:
-    model: meta-llama/Llama-3.3-70B-Instruct
-    max_model_len: 2048
-    tensor_parallel_size: 2
-  extra_labels:
-    openllm_alias: 70b,70b-instruct
-    model_name: meta-llama/Llama-3.3-70B-Instruct
-  extra_envs:
-    - name: HF_TOKEN
-"deepseek-r1-distill:llama3.3-70b-instruct-fp16":
+    envs:
+      - name: HF_TOKEN
+  alias:
+    - 70b
+"hermes-3:llama3.1-405b-instruct":
   project: vllm-chat
+  engine_config:
+    model: NousResearch/Hermes-3-Llama-3.1-405B-FP8
+    max_model_len: 2048
+    tensor_parallel_size: 6
+  server_config:
+    tool_call_parser: "pythonic"
   service_config:
-    name: deepseek-r1-distill
+    name: hermes3
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 6
+      gpu_type: nvidia-a100-80gb
+  alias:
+    - 405b
+"hermes-3:deep-llama3-8b":
+  project: vllm-chat
+  reasoning: true
+  service_config:
+    name: hermes
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+  engine_config:
+    model: NousResearch/DeepHermes-3-Llama-3-8B-Preview
+    max_model_len: 8192
+  server_config:
+    tool_call_parser: "pythonic"
+  alias:
+    - 8b
+"jamba1.5:mini":
+  project: vllm-chat
+  reasoning: true
+  service_config:
+    name: jamba1.5
     traffic:
       timeout: 300
     resources:
       gpu: 2
       gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+      - name: UV_NO_BUILD_ISOLATION
+        value: 1
+  engine_config:
+    model: ai21labs/AI21-Jamba-1.5-Mini
+    max_model_len: 204800
+    tensor_parallel_size: 2
+    enable_prefix_caching: false
+  server_config:
+    tool_call_parser: "jamba"
+  build:
+    system_packages:
+      - curl
+      - git
+    post:
+      - uv pip install --compile-bytecode torch
+      - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+  alias:
+    - mini
+"jamba1.5:large":
+  project: vllm-chat
+  service_config:
+    name: jamba1.5
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 8
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+      - name: UV_NO_BUILD_ISOLATION
+        value: 1
+  engine_config:
+    model: ai21labs/AI21-Jamba-1.5-Large
+    max_model_len: 225280
+    tensor_parallel_size: 8
+    quantization: "experts_int8"
+    enable_prefix_caching: false
+  build:
+    system_packages:
+      - curl
+      - git
+    post:
+      - uv pip install --compile-bytecode torch
+      - curl -L -o ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.5.0.post8/causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./causal_conv1d-1.5.0.post8+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - curl -L -o ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl https://github.com/state-spaces/mamba/releases/download/v2.2.4/mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+      - uv pip install --compile-bytecode ./mamba_ssm-2.2.4+cu12torch2.5cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+  server_config:
+    tool_call_parser: "jamba"
+  alias:
+    - large
+"deepseek:v3-671b":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 16
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-V3
+    max_model_len: 2048
+    tensor_parallel_size: 16
+  alias:
+    - v3-671b
+    - v3
+"deepseek:r1-671b":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 16
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-R1
+    tensor_parallel_size: 16
+    trust_remote_code: True
+    max_model_len: 4096
+  server_config:
+    enable_reasoning: true
+    reasoning_parser: deepseek_r1
+  alias:
+    - r1-671b
+    - r1
+"deepseek:r1-distill-llama3.3-70b":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 2
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
-    max_model_len: 2048
     tensor_parallel_size: 2
-    dtype: half
-  extra_labels:
-    openllm_alias: 70b,70b-instruct
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Llama-70B
-"deepseek-r1-distill:qwen2.5-32b-fp16":
+    max_model_len: 4096
+  server_config:
+    reasoning_parser: "deepseek_r1"
+    tool_call_parser: "llama3_json"
+  alias:
+    - r1-llama3.3-70b
+"deepseek:r1-distill-llama3.3-70b-w8a8":
   project: vllm-chat
-  extra_labels:
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-    openllm_alias: 32b
   service_config:
-    name: deepseek-r1-distill
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+  engine_config:
+    model: neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w8a8
+    max_model_len: 4096
+  server_config:
+    reasoning_parser: "deepseek_r1"
+    tool_call_parser: "llama3_json"
+  alias:
+    - r1-llama3.3-70b-w8a8
+"deepseek:r1-distill-llama3.3-70b-w4a16":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+  engine_config:
+    model: neuralmagic/DeepSeek-R1-Distill-Llama-70B-quantized.w4a16
+    max_model_len: 8192
+  server_config:
+    reasoning_parser: "deepseek_r1"
+    tool_call_parser: "llama3_json"
+  alias:
+    - r1-llama3.3-70b-w4a16
+"deepseek:r1-distill-qwen2.5-32b":
+  project: vllm-chat
+  service_config:
+    name: deepseek
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
     traffic:
       timeout: 300
+    envs:
+      - name: HF_TOKEN
   engine_config:
     model: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-    max_model_len: 2048
-    dtype: half
-'deepseek-r1-distill:qwen2.5-14b-fp16':
+    max_model_len: 4096
+  server_config:
+    reasoning_parser: "deepseek_r1"
+    tool_call_parser: "llama3_json"
+  alias:
+    - r1-qwen2.5-32b
+"deepseek:r1-distill-qwen2.5-32b-w8a8":
   project: vllm-chat
   service_config:
-    name: deepseek-r1-distill
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w8a8
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-qwen2.5-32b-w8a8
+"deepseek:r1-distill-qwen2.5-32b-w4a16":
+  project: vllm-chat
+  service_config:
+    name: deepseek
     traffic:
       timeout: 300
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
   engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 14b,14b-instruct
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
-'deepseek-r1-distill:llama3.1-8b-fp16':
+    model: neuralmagic/DeepSeek-R1-Distill-Qwen-32B-quantized.w4a16
+    max_model_len: 16384
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-qwen2.5-32b-w4a16
+"deepseek:r1-distill-qwen2.5-14b":
   project: vllm-chat
   service_config:
-    name: deepseek-r1-distill
+    name: deepseek
     traffic:
       timeout: 300
     resources:
       gpu: 1
-      gpu_type: nvidia-tesla-l4
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 8b,8b-instruct
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
-'deepseek-r1-distill:qwen2.5-7b-math-fp16':
+    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-14B
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: deepseek_r1
+  alias:
+    - r1-qwen2.5-14b
+"deepseek:r1-distill-qwen2.5-14b-w8a8":
   project: vllm-chat
   service_config:
-    name: deepseek-r1-distill
+    name: deepseek
     traffic:
       timeout: 300
     resources:
       gpu: 1
       gpu_type: nvidia-l4
   engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 7b,7b-math
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-'deepseek-r1-distill:qwen2.5-1.5b-math-fp16':
+    model: neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w8a8
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-qwen2.5-14b-w8a8
+"deepseek:r1-distill-qwen2.5-14b-w4a16":
   project: vllm-chat
   service_config:
-    name: deepseek-r1-distill
+    name: bentovllm-r1-qwen2.5-14b-w4a16-service
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+  engine_config:
+    model: neuralmagic/DeepSeek-R1-Distill-Qwen-14B-quantized.w4a16
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-qwen2.5-14b-w4a16
+"deepseek:r1-distill-llama3.1-8b":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-llama3.1-8b
+"deepseek:r1-distill-qwen2.5-7b-math":
+  project: vllm-chat
+  service_config:
+    name: deepseek
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    max_model_len: 4096
+  server_config:
+    tool_call_parser: "llama3_json"
+    reasoning_parser: "deepseek_r1"
+  alias:
+    - r1-qwen2.5-math
+"gemma3:1b-instruct":
+  project: vllm-chat
+  service_config:
+    name: gemma3
     traffic:
       timeout: 300
     resources:
       gpu: 1
       gpu_type: nvidia-rtx-3060
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
-    max_model_len: 2048
-    dtype: half
-  extra_labels:
-    openllm_alias: 1.5b,1.5b-math
-    model_name: deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
-"deepseek-v3:671b-instruct-fp8":
+    model: google/gemma-3-1b-it
+    max_model_len: 4096
+  alias:
+    - 1b
+"gemma3:4b-instruct":
   project: vllm-chat
   service_config:
-    name: deepseek-v3
+    name: gemma3
     traffic:
       timeout: 300
     resources:
-      gpu: 16
-      gpu_type: nvidia-a100-80gb
+      gpu: 1
+      gpu_type: nvidia-l4
+    envs:
+      - name: HF_TOKEN
   engine_config:
-    model: deepseek-ai/DeepSeek-V3
-    max_model_len: 2048
-    tensor_parallel_size: 16
-  extra_labels:
-    openllm_alias: 671b
-    model_name: deepseek-v3
+    model: google/gemma-3-4b-it
+    max_model_len: 8192
+  alias:
+    - 4b
+"gemma3:12b-instruct":
+  project: vllm-chat
+  service_config:
+    name: gemma3
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: google/gemma-3-12b-it
+    max_model_len: 16384
+  alias:
+    - 12b
+"gemma3:27b-instruct":
+  project: vllm-chat
+  service_config:
+    name: gemma3
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-a100-80gb
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: google/gemma-3-27b-it
+    max_model_len: 16384
+  alias:
+    - 27b

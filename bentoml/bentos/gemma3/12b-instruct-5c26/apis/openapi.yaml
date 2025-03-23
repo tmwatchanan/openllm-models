@@ -115,7 +115,7 @@ info:
   contact:
     email: contact@bentoml.com
     name: BentoML Team
-  description: "# gemma3-lm:dev\n\n[![pypi_status](https://img.shields.io/badge/BentoML-1.4.5-informational)](https://pypi.org/project/BentoML)\n\
+  description: "# gemma3:dev\n\n[![pypi_status](https://img.shields.io/badge/BentoML-1.4.5-informational)](https://pypi.org/project/BentoML)\n\
     [![documentation_status](https://readthedocs.org/projects/bentoml/badge/?version=latest)](https://docs.bentoml.com/)\n\
     [![join_slack](https://badgen.net/badge/Join/BentoML%20Slack/cyan?icon=slack)](https://l.bentoml.com/join-slack-swagger)\n\
     [![BentoML GitHub Repo](https://img.shields.io/github/stars/bentoml/bentoml?style=social)](https://github.com/bentoml/BentoML)\n\
@@ -125,7 +125,7 @@ info:
     * [\U0001F4AC Community](https://l.bentoml.com/join-slack-swagger): Join the BentoML\
     \ Slack community.\n* [\U0001F41B GitHub Issues](https://github.com/bentoml/BentoML/issues):\
     \ Report bugs and feature requests.\n* Tip: you can also [customize this README](https://docs.bentoml.com/en/latest/reference/bentoml/bento-build-options.html#description).\n"
-  title: gemma3-lm
+  title: gemma3
   version: None
 openapi: 3.0.2
 paths:
@@ -165,7 +165,7 @@ paths:
   /generate:
     post:
       description: ''
-      operationId: gemma3-lm__generate
+      operationId: gemma3__generate
       requestBody:
         content:
           application/json:

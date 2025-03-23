@@ -7,7 +7,7 @@ project: vllm-chat
 service_config:
   envs:
   - name: HF_TOKEN
-  name: gemma3-lm
+  name: gemma3
   resources:
     gpu: 1
     gpu_type: nvidia-a100-80gb

@@ -1,5 +1,5 @@
 {
-  "name": "gemma3-lm",
+  "name": "gemma3",
   "type": "service",
   "routes": [
     {

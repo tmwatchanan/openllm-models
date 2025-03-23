@@ -1261,19 +1261,3 @@
     max_model_len: 16384
   alias:
     - 27b
-"gemma3:27b-instruct-lm":
-  project: vllm-chat
-  service_config:
-    name: gemma3-lm
-    traffic:
-      timeout: 300
-    resources:
-      gpu: 1
-      gpu_type: nvidia-a100-80gb
-    envs:
-      - name: HF_TOKEN
-  engine_config:
-    model: google/gemma-3-27b-it
-    max_model_len: 16384
-  alias:
-    - 27b

@@ -1,21 +1,21 @@
 service: service:VLLM
 name: gemma3
-version: 27b-instruct-lm-1dd1
+version: 27b-instruct-483a
 bentoml_version: 1.4.5
-creation_time: '2025-03-22T19:12:15.501101+00:00'
+creation_time: '2025-03-23T11:12:25.405489+00:00'
 labels:
   generator: openllm
   owner: bentoml-team
   aliases: 27b
 models: []
-entry_service: gemma3-lm
+entry_service: gemma3
 services:
-- name: gemma3-lm
+- name: gemma3
   service: ''
   models:
   - tag: google--gemma-3-27b-it:44f73bf6ab342291269e6e2ffa8ccf92
     module: null
-    creation_time: '2025-03-22T19:12:15.481873+00:00'
+    creation_time: '2025-03-23T11:12:25.385037+00:00'
     registry: huggingface
     metadata:
       model_id: google/gemma-3-27b-it
@@ -27,7 +27,7 @@ services:
       - '*.pt'
   dependencies: []
   config:
-    name: gemma3-lm
+    name: gemma3
     resources:
       gpu: 1
       gpu_type: nvidia-a100-80gb
@@ -41,9 +41,9 @@ envs:
 - name: HF_HUB_DISABLE_PROGRESS_BARS
   value: '1'
 - name: VLLM_LOGGING_CONFIG_PATH
-  value: /private/var/folders/qw/9r379tc95ll3_q1rfn86sygm0000gn/T/tmp6l0tdxqh/logging-config.json
+  value: /private/var/folders/qw/9r379tc95ll3_q1rfn86sygm0000gn/T/tmp551_0dcm/logging-config.json
 schema:
-  name: gemma3-lm
+  name: gemma3
   type: service
   routes:
   - name: generate

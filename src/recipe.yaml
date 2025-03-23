@@ -1274,6 +1274,6 @@
       - name: HF_TOKEN
   engine_config:
     model: google/gemma-3-27b-it
-    max_model_len: 64000
+    max_model_len: 16384
   alias:
     - 27b

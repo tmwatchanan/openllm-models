@@ -1278,6 +1278,23 @@
     quantization: fp8
   alias:
     - 12b-fp8
+"gemma3:12b-instruct-fp4":
+  project: vllm-chat
+  service_config:
+    name: gemma3
+    traffic:
+      timeout: 300
+    resources:
+      gpu: 1
+      gpu_type: nvidia-tesla-a100
+    envs:
+      - name: HF_TOKEN
+  engine_config:
+    model: google/gemma-3-12b-it
+    max_model_len: 16384
+    quantization: fp4
+  alias:
+    - 12b-fp4
 "gemma3:12b-instruct-2048":
   project: vllm-chat
   service_config:

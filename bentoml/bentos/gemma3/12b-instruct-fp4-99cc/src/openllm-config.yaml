@@ -1,0 +1,16 @@
+alias:
+- 12b-fp4
+engine_config:
+  max_model_len: 16384
+  model: google/gemma-3-12b-it
+  quantization: fp4
+project: vllm-chat
+service_config:
+  envs:
+  - name: HF_TOKEN
+  name: gemma3
+  resources:
+    gpu: 1
+    gpu_type: nvidia-tesla-a100
+  traffic:
+    timeout: 300

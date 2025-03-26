@@ -1,7 +1,8 @@
 alias:
-- 12b-fp8
+- 12b-fp8-seqs16
 engine_config:
   max_model_len: 16384
+  max_num_seqs: 16
   model: google/gemma-3-12b-it
   quantization: fp8
 project: vllm-chat

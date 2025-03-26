@@ -1276,10 +1276,9 @@
     model: google/gemma-3-12b-it
     max_model_len: 16384
     quantization: fp8
-    max_num_seqs: 16
   alias:
     - 12b-fp8
-"gemma3:12b-instruct-fp4":
+"gemma3:12b-instruct-fp8-seqs16":
   project: vllm-chat
   service_config:
     name: gemma3
@@ -1293,9 +1292,10 @@
   engine_config:
     model: google/gemma-3-12b-it
     max_model_len: 16384
-    quantization: fp4
+    quantization: fp8
+    max_num_seqs: 16
   alias:
-    - 12b-fp4
+    - 12b-fp8-seqs16
 "gemma3:12b-instruct-2048":
   project: vllm-chat
   service_config:

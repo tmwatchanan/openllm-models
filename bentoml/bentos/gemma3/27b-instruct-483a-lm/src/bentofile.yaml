@@ -36,7 +36,7 @@ include:
 - ui/*
 - '*.json'
 labels:
-  aliases: 27b
+  aliases: 27b-lm
   generator: openllm
   owner: bentoml-team
 models: []

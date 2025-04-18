@@ -6,7 +6,7 @@ creation_time: '2025-03-23T11:12:19.129231+00:00'
 labels:
   generator: openllm
   owner: bentoml-team
-  aliases: 12b
+  aliases: 12b-lm
 models: []
 entry_service: gemma3
 services:
